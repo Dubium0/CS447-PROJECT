@@ -15,7 +15,7 @@ class TorrentList:
             height=15,
             selectmode="browse"
         )
-        self.tree.heading("Name", text="Name")
+        self.tree.heading("Name", text="Torrent Name")
         self.tree.heading("Download Speed", text="Download Speed")
         self.tree.heading("Upload Speed", text="Upload Speed")
         self.tree.heading("Completion", text="Completion (%)")
