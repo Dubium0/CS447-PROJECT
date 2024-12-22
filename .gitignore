@@ -1,3 +1,4 @@
 /.venv/
 __pycache__/
 
+/tracker_server/database/data.db
