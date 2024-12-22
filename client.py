@@ -1,5 +1,4 @@
-from view.main_window import MainWindow
-
+from client.view.main_window import MainWindow
 if __name__ == '__main__':
     client = MainWindow()
     client.start()

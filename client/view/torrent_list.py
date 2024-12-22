@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from .callbacks.torrent_list_callbacks import TorrentListCallbacks
 from .data_objects.torrent_item import TorrentItem
-
+from ..model.torrent_model import TorrentModel,TorrentInfo
 class TorrentList:
     def __init__(self, parent):
         self.parent = parent
@@ -31,7 +31,7 @@ class TorrentList:
 
         self.callbacks = TorrentListCallbacks(self.tree)
 
-    def add_torrent(self, torrent: TorrentItem):
+    def add_torrent(self, torrent: TorrentModel):
         self.callbacks.add_torrent(torrent)
 
     def remove_selected_torrent(self, ):

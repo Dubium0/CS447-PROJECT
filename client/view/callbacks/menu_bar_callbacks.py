@@ -7,9 +7,11 @@ class MenuBarCallbacks:
             title='Select a torrent file',
             filetypes=[("Torrent Files", "*.torrent"), ("All Files", "*.*")]
         )
-
+        
         if file_path:
             messagebox.showinfo("Torrent Selected", f"Selected file: {file_path}")
+            
+
         else:
             messagebox.showerror("No File Selected", "Please select a torrent file.")
 

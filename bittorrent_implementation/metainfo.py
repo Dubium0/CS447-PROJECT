@@ -2,7 +2,7 @@ import os
 import time
 import hashlib
 import bencode
-from utility import Result
+from .utility import Result
 # I enforced the piece length to be power of twos because it is recomended
 def create_torrent_metainfo(announce_url : str, file_path : str, piece_length_power : int  = 18,creator_name :str = "No Name",output_path : str = "") -> Result: 
     
