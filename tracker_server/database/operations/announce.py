@@ -1,4 +1,3 @@
-import time
 from ..database import Database
 
 def is_torrent_tracked(info_hash):
