@@ -1,5 +1,4 @@
 from flask import request, jsonify
-import time
 from . import announce_blueprint
 from ...database.operations.announce import *
 
