@@ -52,4 +52,4 @@ def announce():
 
 if __name__ == '__main__':
     # Run the server
-    app.run(host='0.0.0.0', port=6969)  # Use port 6969 (default for trackers)
+    app.run(host='0.0.0.0', port=6881)  # Use port 6969 (default for trackers)
