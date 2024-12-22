@@ -32,9 +32,9 @@ class Database:
                 init_cursor.close()
                 init_conn.close()
                 sys.exit(1)
-
-            init_cursor.close()
-            init_conn.close()
+            finally:
+                init_cursor.close()
+                init_conn.close()
 
     def connect(self):
         return sqlite3.connect(self.database_path)
