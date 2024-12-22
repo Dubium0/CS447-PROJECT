@@ -2,12 +2,13 @@ import tkinter as tk
 from tkinter import ttk
 
 from .callbacks.torrent_list_callbacks import TorrentListCallbacks
-from .data_objects.torrent_item import TorrentItem
-from ..model.torrent_model import TorrentModel,TorrentInfo
-class TorrentList:
-    def __init__(self, parent):
-        self.parent = parent
+from ..model.torrent_metainfo import TorrentMetainfo,TorrentViewInfo
 
+
+class TorrentList:
+    def __init__(self, parent,controller):
+        self.parent = parent
+        self.controller =controller
         self.tree = ttk.Treeview(
             self.parent,
             columns=("Name", "Download Speed", "Upload Speed", "Completion", "Status"),
@@ -29,17 +30,23 @@ class TorrentList:
 
         self.tree.pack(fill=tk.BOTH, expand=True)
 
-        self.callbacks = TorrentListCallbacks(self.tree)
+    def redraw_torrent_list(self, list_of_torrent : list[TorrentViewInfo]):
+        
+        self.tree.children.clear()
+        for item in list_of_torrent:
+            self.tree.insert("", "end", values=(
+                item.name,
+                item.download_speed,
+                item.upload_speed,
+                item.completion,
+                item.status
+            ))
 
-    def add_torrent(self, torrent: TorrentModel):
-        self.callbacks.add_torrent(torrent)
+    def remove_selected_torrent(self ):
+        selected_item : TorrentViewInfo = self.tree.selection()[0]
+        self.controller.remove_torrent(selected_item.original)
 
-    def remove_selected_torrent(self, ):
-        self.callbacks.remove_selected_torrent()
-
-    def get_selected_torrent(self, ):
+    def get_selected_torrent(self):
         return self.callbacks.get_selected_torrent()
 
-    def populate_with_dummy_torrents(self, ):
-        self.callbacks.populate_with_dummy_torrents()
 

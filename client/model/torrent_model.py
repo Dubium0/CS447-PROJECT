@@ -1,50 +1,32 @@
-from bittorrent_implementation import metainfo
-from bittorrent_implementation.utility import Result
-class TorrentInfo:
-    def __init__(self, 
-                 piece_length : int,
-                 name : str, 
-                 lenght : int,
-                 pieces : bytearray):
-        self.piece_length = piece_length
-        self.name = name
-        self.lenght = lenght
-        self.pieces = pieces
+from .torrent_metainfo import TorrentMetainfo, TorrentViewInfo
+
+
+class TorrentModel:
+
+    def __init__(self):
+        self.torrent_list = [] #pair is TorrentMetafile and current path to download location
+
+
+    def add_torrent(self,torrent: TorrentMetainfo, path_to_download_location : str):
+        self.torrent_list.append({"Metainfo":torrent, "Download Location":path_to_download_location})
+
+
+    def remove_torrent(self,torrent_to_remove : TorrentMetainfo):
+        for pair in  self.torrent_list:
+            if pair["Metainfo"] is torrent_to_remove:
+                self.torrent_list.remove(pair)
+                break
     
-
-class TorrentModel: 
-
-    def __init__(self,
-                 announce_url : str,
-                 creation_date:str,
-                 created_by : str ,
-                 info : TorrentInfo):
-        self.announce_url = announce_url
-        self.creation_date = creation_date
-        self.created_by = created_by
-        self.info = info
-
-    @staticmethod
-    def createTorrentModelFromFile(filePath :str):
-        decoded_metainfo = metainfo.decode_torrent_metainfo(filePath)
-        if(decoded_metainfo == Result.FAILURE ):
-            return Result.FAILURE
-       # #else successfully created
-       #'announce': decoded_data.get('announce'), 
-       # 'creation date': decoded_data.get('creation date'),
-       # 'created by': decoded_data.get('created by'), 
-       # 'info': { 
-       #     'piece length': decoded_data.get('info').get('piece length'), 
-       #     'name': decoded_data.get('info').get('name'), 
-       #     'length':decoded_data.get('info').get('length'), 
-       #     'pieces': decoded_data.get('info').get('pieces')
-        info = decoded_metainfo['info']
-        torrent_info = TorrentInfo(piece_length=info['piece length'],
-                                   name = info['name'],
-                                   lenght = info['length'],
-                                   pieces = info['pieces'])
-        torrent_model = TorrentModel(announce_url = decoded_metainfo['announce'],
-                                     creation_date= decoded_metainfo['creation date'],
-                                     created_by= decoded_metainfo['created by'],
-                                     info = torrent_info) 
-        return torrent_model      
+    def get_torrent_view_list(self):
+        result_list = []
+        for pair in self.torrent_list:
+            metainfo : TorrentMetainfo = pair["Metainfo"]
+            view_info = TorrentViewInfo( 
+                                    original= metainfo,
+                                    name = metainfo.info.name,
+                                    download_speed = "0",
+                                    upload_speed = "0",
+                                    completion = f"0/1",
+                                    status= "PENDING")
+            result_list.append ( view_info) 
+        return result_list
