@@ -14,7 +14,7 @@ def create_torrent_metainfo(announce_url : str, file_path : str, piece_length_po
 
     metainfo_raw = { 
         'announce': announce_url, 
-        'creation date': int(time.time()), 
+        'creation date': int(time.time()), ## update to proper date time
         'created by': creator_name, 
         'info': { 
             'piece length': piece_length, 
@@ -40,3 +40,32 @@ def create_torrent_metainfo(announce_url : str, file_path : str, piece_length_po
 
     print(f".torrent file created: {output_path}")
     return Result.SUCCESS
+
+def decode_torrent_metainfo(file_path : str):
+    if(not os.path.exists(file_path)):
+        print(f"{file_path} does not exists!")
+        return Result.FAILURE
+    
+    _, file_extension = os.path.splitext(file_path)
+    if(file_extension != '.torrent'):
+        print(f"{file_extension} is not a torrent file!")
+        return Result.FAILURE
+
+    
+    decoded_data = bencode.bread(file_path)
+    metainfo_raw = { 
+        'announce': decoded_data.get('announce'), 
+        'creation date': decoded_data.get('creation date'),
+        'created by': decoded_data.get('created by'), 
+        'info': { 
+            'piece length': decoded_data.get('info').get('piece length'), 
+            'name': decoded_data.get('info').get('name'), 
+            'length':decoded_data.get('info').get('length'), 
+            'pieces': decoded_data.get('info').get('pieces')
+        }
+    }
+
+    return metainfo_raw
+     
+    
+
