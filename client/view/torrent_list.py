@@ -30,6 +30,8 @@ class TorrentList:
 
         self.tree.pack(fill=tk.BOTH, expand=True)
 
+        self.tree.bind("<Double-1>", self.on_double_click)
+
     def redraw_torrent_list(self, list_of_torrent : list[TorrentViewInfo]):
         
         self.tree.children.clear()
@@ -48,5 +50,12 @@ class TorrentList:
 
     def get_selected_torrent(self):
         return self.callbacks.get_selected_torrent()
+
+    def on_double_click(self, event):
+        # Get the item that was double-clicked
+        item = self.tree.selection()[0]
+        # Retrieve item details (e.g., text in the first column)
+        item_text = self.tree.item(item, "values")
+        print("Double-clicked on:", item_text)
 
 
