@@ -30,21 +30,17 @@ class MenuBar:
                 title="Select Torrent Destination Folder"
             )
 
-            while not destination_path:
+            if not destination_path:
                 messagebox.showwarning("No Destination Selected", "Please select a destination folder.")
-                destination_path = filedialog.askdirectory(
-                    title="Select Torrent Destination Folder"
-                )
+                return
 
             download_dest_path = filedialog.askdirectory(
                 title="Select Download Destination Folder"
             )
 
-            while not download_dest_path:
+            if not download_dest_path:
                 messagebox.showwarning("No Destination Selected", "Please select a destination folder.")
-                download_dest_path = filedialog.askdirectory(
-                    title="Select Download Destination Folder"
-                )
+                return
 
             try:
                 torrent_metainfo = self.controller.create_torrent(file_path, destination_path, download_dest_path)

@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-from .callbacks.torrent_list_callbacks import TorrentListCallbacks
 from ..model.torrent_metainfo import TorrentMetainfo,TorrentViewInfo
 
 
@@ -48,14 +47,8 @@ class TorrentList:
         selected_item : TorrentViewInfo = self.tree.selection()[0]
         self.controller.remove_torrent(selected_item.original)
 
-    def get_selected_torrent(self):
-        return self.callbacks.get_selected_torrent()
-
     def on_double_click(self, event):
-        # Get the item that was double-clicked
-        item = self.tree.selection()[0]
-        # Retrieve item details (e.g., text in the first column)
-        item_text = self.tree.item(item, "values")
-        print("Double-clicked on:", item_text)
+        selected_item = self.tree.selection()[0]
+        self.controller.show_torrent_options(selected_item)
 
 

@@ -1,6 +1,7 @@
 from ..model.torrent_model import TorrentModel
 from ..view.torrent_view import TorrentView
 from ..model.torrent_metainfo import TorrentMetainfo,TorrentViewInfo
+from ..view.torrent_popup import TorrentPopup
 
 from . import torrent_loader_saver
 from bittorrent_implementation.metainfo import create_torrent_metainfo
@@ -52,5 +53,10 @@ class TorrentController:
     @staticmethod
     def getMetaInfoFile(file_path :str) ->TorrentMetainfo:
         return torrent_loader_saver.createTorrentMetainfoFromFile(file_path)
+
+    def show_torrent_options(self, item):
+        popup = TorrentPopup(self.view, item)
+        popup.show_popup()
+
 
  
