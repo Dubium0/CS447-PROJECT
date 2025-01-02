@@ -16,9 +16,9 @@ class TorrentController:
     def run(self):
         self.view.mainloop()
 
-    def create_torrent(self, src_path, dest_path):
+    def create_torrent(self, src_path, torrent_dest, download_dest_path = None):
         file_name = os.path.splitext(os.path.basename(src_path))[0]
-        dest_path = str(Path(dest_path) / (file_name + '.torrent'))
+        dest_path = str(Path(torrent_dest) / (file_name + '.torrent'))
 
         create_torrent_metainfo(
             file_path=src_path,
@@ -30,7 +30,7 @@ class TorrentController:
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
         print("Adding torrent...")
-        self.model.add_torrent(torrent_metainfo, dest_path)
+        self.model.add_torrent(torrent_metainfo, download_dest_path)
 
         self.update_torrent_view(self.model.get_torrent_view_list())
 

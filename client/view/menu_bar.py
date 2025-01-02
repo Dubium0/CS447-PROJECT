@@ -27,23 +27,29 @@ class MenuBar:
 
         if file_path:
             destination_path = filedialog.askdirectory(
-                title="Select Destination Folder"
+                title="Select Torrent Destination Folder"
             )
 
-            if destination_path:
-                try:
-                    torrent_info = self.controller.create_torrent(file_path, destination_path)
-                    messagebox.showinfo(
-                        "Success",
-                        f"Torrent created successfully at {destination_path}."
-                    )
-                except Exception as e:
-                    messagebox.showerror(
-                        "Error",
-                        f"Failed to create torrent: {str(e)}"
-                    )
-            else:
+            while not destination_path:
                 messagebox.showwarning("No Destination Selected", "Please select a destination folder.")
+                destination_path = filedialog.askdirectory(
+                    title="Select Torrent Destination Folder"
+                )
+
+            download_dest_path = filedialog.askdirectory(
+                title="Select Download Destination Folder"
+            )
+
+            while not download_dest_path:
+                messagebox.showwarning("No Destination Selected", "Please select a destination folder.")
+                download_dest_path = filedialog.askdirectory(
+                    title="Select Download Destination Folder"
+                )
+
+            try:
+                torrent_metainfo = self.controller.create_torrent(file_path, destination_path, download_dest_path)
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
         else:
             messagebox.showwarning("No File Selected", "Please select a file to create the torrent.")
