@@ -32,13 +32,11 @@ def create_torrent_metainfo(announce_url : str, file_path : str, piece_length_po
     metainfo = bencode.encode(metainfo_raw)
     
     if not output_path:
-        output_path = file_path
-    
-    output_path  = file_path + '.torrent'
+        output_path  = file_path + '.torrent'
+
     with open(output_path, 'wb') as byte_stream: 
         byte_stream.write(metainfo)
 
-    print(f".torrent file created: {output_path}")
     return Result.SUCCESS
 
 def decode_torrent_metainfo(file_path : str):
