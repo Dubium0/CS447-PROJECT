@@ -34,5 +34,42 @@ def decode():
     else:
          print("Successfully decoded!")
          print(result)
+import json
+from file_write_read_helpers import verify_file_integrity
+def download():
+      #announce_url : str, file_path : str, piece_length_power : int  = 18,creator_name :str = "No Name",output_path : str = ""
+    parser = argparse.ArgumentParser(description="Download torrent file") 
+   
+    parser.add_argument('--downloadDir', type=str, required=True, help="Path of the download dir")
+    parser.add_argument('--torrentPath', type=str, required=True, help="Path of the torrent file")
+    parser.add_argument('--downloadItemPath', type=str, required=True, help="Path of the download item path")
+    args = parser.parse_args() 
+
+    print(args)
+    result = metainfo.create_download_metainfo(download_dir_path =  args.downloadDir, torrent_path= args.torrentPath, download_item_path= args.downloadItemPath )
+    if(not result):
+        print("Failed")
+    else:
+         print("Successfully CREATED!")
+         print(result)
+    
+    #integrity verify test
+    with open(result, 'r') as file: 
+        data = json.load(file) 
+    piece_length  = data["piece length"]
+    check_pieces_int =  data["remaining pieces"] # it should downloaded pieces in real life, for now this is for test purposes
+
+    check_pieces_bytes = []
+    for tuple_ in check_pieces_int:
+        num_bytes = (tuple_[1].bit_length() + 7) // 8 
+        # Encode the integer to bytes 
+        byte_data = tuple_[1].to_bytes(num_bytes, byteorder='big')
+        check_pieces_bytes.append((tuple_[0],byte_data))
+
+
+    corruptedBytes = verify_file_integrity(check_pieces=check_pieces_bytes,piece_length=piece_length,file_to_check_path= args.downloadItemPath)
+    print(f"Corrupted bytes (if exists) :{corruptedBytes}")
+
+
 if __name__ == "__main__": 
-    decode()
+    download()

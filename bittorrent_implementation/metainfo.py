@@ -2,7 +2,9 @@ import os
 import time
 import hashlib
 import bencode
-from .utility import Result
+from utility import Result, split_bytes
+import uuid
+import json
 # I enforced the piece length to be power of twos because it is recomended
 def create_torrent_metainfo(announce_url : str, file_path : str, piece_length_power : int  = 18,creator_name :str = "No Name",output_path : str = "") -> Result: 
     
@@ -65,5 +67,41 @@ def decode_torrent_metainfo(file_path : str):
 
     return metainfo_raw
      
-    
 
+#creates download metainfo file and returns its path
+def create_download_metainfo(download_dir_path : str, torrent_path : str, download_item_path : str) -> str:
+
+    if not os.path.isdir(download_dir_path):
+        print("Provide directory not file path!")
+        return Result.FAILURE
+
+    torrent_meta_info = decode_torrent_metainfo(torrent_path)
+
+    if (torrent_meta_info == Result.FAILURE):
+        print("Failed to decode torrent file1")
+        return
+    
+    if not os.path.exists(download_item_path):
+        print("Download Item path does not exists!")
+        return
+    
+    torrent_name :str = torrent_meta_info['info']['name']
+    torrent_name = ''.join(torrent_name.split('_'))
+    name = f"{torrent_name}_downloadMetaInfo_{uuid.uuid4().hex[:5]}.json" #lazy way of dealing duplicates
+
+    final_download_meta_info_file_path = os.path.join(download_dir_path,name)
+
+    byteList =  list(enumerate(list(split_bytes(torrent_meta_info['info']['pieces'],20))))
+    download_metainfo  = {
+        "file path" : download_item_path,
+        "torrent path" : torrent_path,
+        "piece length" : int(torrent_meta_info['info']['piece length']),
+        "downloaded pieces" : None,
+        "remaining pieces" : byteList,
+    }
+    print(download_metainfo["remaining pieces"])
+    # Write JSON data to the file
+    with open(final_download_meta_info_file_path, 'w') as file:
+        json.dump(download_metainfo, file, indent=4)
+
+    return final_download_meta_info_file_path
