@@ -19,7 +19,7 @@ def read_piece(file_path, piece_index, piece_length, file_length, num_of_pieces)
 
     return data
 
-#Listening Function
+#Sender Function
 def start_listening(port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('0.0.0.0', port))
@@ -110,7 +110,7 @@ def handle_client(client_socket):
 if __name__ == "__main__":
     #Get these from tracker server
     listen_port = 6881
-    peer_ip = "54.160.230.214"
+    peer_ip = "52.90.158.48"
     peer_port = 6881
     message = b"hashhashashhash"
 
