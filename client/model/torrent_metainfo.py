@@ -18,11 +18,13 @@ class TorrentMetainfo:
                  announce_url : str,
                  creation_date:str,
                  created_by : str ,
-                 info : TorrentInfo):
+                 info : TorrentInfo,
+                 ):
         self.announce_url = announce_url
         self.creation_date = creation_date
         self.created_by = created_by
         self.info = info
+      
 
 
 #  self.tree.column("Name", width=300)
