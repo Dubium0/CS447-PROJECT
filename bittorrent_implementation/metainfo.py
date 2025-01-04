@@ -2,7 +2,7 @@ import os
 import time
 import hashlib
 import bencode
-from utility import Result, split_bytes
+from .utility import Result, split_bytes
 import uuid
 import json
 # I enforced the piece length to be power of twos because it is recomended

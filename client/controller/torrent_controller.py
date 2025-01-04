@@ -38,7 +38,7 @@ class TorrentController:
     def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str):
         print("Adding torrent...")
         self.model.add_torrent(metainfo, output_dir_path)
-
+    
         self.update_torrent_view( self.model.get_torrent_view_list())
 
 

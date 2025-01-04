@@ -31,9 +31,14 @@ class TorrentList:
 
         self.tree.bind("<Double-1>", self.on_double_click)
 
+    def remove_children(self):
+        """Remove all children of a specific parent node."""
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
     def redraw_torrent_list(self, list_of_torrent : list[TorrentViewInfo]):
         
-        self.tree.children.clear()
+        self.remove_children()
         for item in list_of_torrent:
             self.tree.insert("", "end", values=(
                 item.name,
