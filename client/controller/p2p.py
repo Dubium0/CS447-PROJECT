@@ -20,7 +20,7 @@ def read_piece(file_path, piece_index, piece_length, file_length, num_of_pieces)
     return data
 
 #Sender Function
-def start_listening(port):
+def start_listening(port, pieceLength, fileLength, numOfPieces):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('0.0.0.0', port))
     server.listen(5)
@@ -29,64 +29,74 @@ def start_listening(port):
     while True:
         client_socket, addr = server.accept()
         print(f"Connected by {addr}")
-        handle_client(client_socket)
+        handle_client(client_socket, pieceLength, fileLength, numOfPieces)
 
 def calculate_sha1(byte_data):
     sha1 = hashlib.sha1()  
     sha1.update(byte_data)  
     return sha1.hexdigest()  
 
-def start_download(peer_ip, peer_port, torrentHash, total_pieces, file_size,file_to_write):
-    create_file('received_file', file_size)
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((peer_ip, peer_port))
-    client.send(torrentHash)
-    request = client.recv(1024)
-    if(request == b"1"):
-        for i in range(total_pieces):
-            piece = bytearray()
-            download_piece(client, (i).to_bytes(4, 'big'))
-            with open('received_file', 'r+b') as f:
-                offset = i * (file_size // total_pieces)
-                while True:
-                    request = client.recv(1024)
-                    if(request == b'3'):
-                        # print(piece)
-                        break
-                    else:
-                        print(request)
-                        piece.extend(request)
+# def start_download(peer_ip, peer_port, torrentHash, total_pieces, file_size,file_to_write):
+#     create_file('received_file', file_size)
+#     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     client.connect((peer_ip, peer_port))
+#     client.send(torrentHash)
+#     request = client.recv(1024)
+#     if(request == b"1"):
+#         for i in range(total_pieces):
+#             piece = bytearray()
+#             download_piece(client, (i).to_bytes(4, 'big'))
+#             with open('received_file', 'r+b') as f:
+#                 offset = i * (file_size // total_pieces)
+#                 while True:
+#                     request = client.recv(1024)
+#                     if(request == b'3'):
+#                         # print(piece)
+#                         break
+#                     else:
+#                         print(request)
+#                         piece.extend(request)
                         
-                        f.seek(offset)
-                        f.write(request)
-                        offset += len(request)
+#                         f.seek(offset)
+#                         f.write(request)
+#                         offset += len(request)
              
-            print(calculate_sha1(piece))
+#             print(calculate_sha1(piece))
 
-def download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, pieceIndex, piece_length,piece_hash):
+def download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, pieceIndex, piece_length):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((peer_ip, peer_port))
-    client.send(pieceIndex)
-    request = client.recv(1024)
-    if(request == b"1"):
-        piece = bytearray()
-        download_piece(client, (pieceIndex).to_bytes(4, 'big'))
-        with open(fileToWriteOn, 'r+b') as f:
-            offset = pieceIndex * piece_length
-            while True:
-                request = client.recv(1024)
-                if(request == b'3'):
-                    # print(piece)
-                    break
-                else:
-                    print(request)
-                    piece.extend(request)
-                    # check Piece hash here 
-                    f.seek(offset)
-                    f.write(request)
-                    offset += len(request)
-             
-            print(calculate_sha1(piece))
+    
+    response = client.recv(1024)
+    if response != b"1":
+        print("Peer rejected request.")
+        client.close()
+        return None
+
+    client.send(pieceIndex.to_bytes(4, 'big'))
+
+    piece = bytearray()
+    while True:
+        chunk = client.recv(1024)
+        if chunk == b'3':  # End-of-piece signal
+            break
+        piece.extend(chunk)
+
+    # if calculate_sha1(piece) == piece_hash:
+    with open(fileToWriteOn, 'r+b') as f:
+        offset = pieceIndex * piece_length
+        f.seek(offset)
+        f.write(piece)
+    
+    print(f"Piece {pieceIndex} written to file.")
+
+    client.close()
+    print(f"Downloaded piece {pieceIndex}")
+    return piece
+
+def download_file(peer_ip, peer_port, fileToWriteOn, piece_length, numOfPieces):
+    for i in range(numOfPieces):
+        download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, i, piece_length)
 
 
 def create_file(file_name, file_size):
@@ -117,12 +127,10 @@ def send_data_in_chunks(client_socket, data, chunk_size=1024):
     print(f"Sent {total_size} bytes in chunks of {chunk_size} bytes.")
 
 # Handle Incoming Client Connections
-def handle_client(client_socket):
-    request = client_socket.recv(4096)
-    
-    if request == b"hashhashashhash":
-        client_socket.send(b"1")
-        file_path = 'sendfile.txt'
+def handle_client(client_socket, pieceLength, fileLength, numOfPieces):
+
+    client_socket.send(b"1")
+    file_path = 'test.txt'
     
     while True:
         request = client_socket.recv(4096)
@@ -134,24 +142,27 @@ def handle_client(client_socket):
         print(f"Received piece request for index: {piece_index}")
         
         # Simulate reading and sending the piece
-        data = read_piece(file_path, piece_index, 262144, 3140, 1)
+        data = read_piece(file_path, piece_index, pieceLength, fileLength, numOfPieces)
         send_data_in_chunks(client_socket, data)
 
 
 
-# Main Program to Run Both Simultaneously
-#if __name__ == "__main__":
+#Main Program to Run Both Simultaneously
+# if __name__ == "__main__":
 #    #Get these from tracker server
 #    listen_port = 6881
 #    peer_ip = "52.90.158.48"
 #    peer_port = 6881
-#    message = b"hashhashashhash"
-#
+#    pieceLength = 262144
+#    fileLength = 714084 
+#    numOfPieces = 3
+#    create_file("received_file", fileLength)
+#    fileToWriteOn = "received_file"
 #    # Start Listening in a Separate Thread
-#    threading.Thread(target=start_listening, args=(listen_port,), daemon=True).start()
-#
+#    threading.Thread(target=start_listening, args=(listen_port, pieceLength, fileLength, numOfPieces), daemon=True).start()
+
 #    # Run this command when torrent is added
-#    start_download(peer_ip, peer_port, message, 1, 3140)
-#
+#    #download_file(peer_ip, peer_port, fileToWriteOn, pieceLength, numOfPieces)
+
 #    while True:
 #        pass
