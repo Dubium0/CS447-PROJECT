@@ -48,11 +48,9 @@ class TorrentPopup:
         }
         # Send the GET request
         response = requests.get(url, params=params)
-        peer :str = response.json()['peers'][0]
-        ip,port = peer.split(':')
-#peer_ip, peer_port, torrentHash, total_pieces, file_size
-        total_piece = math.ceil(self.item.info.lenght / self.item.info.piece_length )
-        self.controller.create_download_thread(ip,port,info_hash,total_piece,self.item.info.lenght)
+        peers :str = response.json()['peers']
+       
+        self.controller.create_torrent_download_thread(peers,self.item.info.name)
         print(response.json())
         # Check if the request was successful
        
