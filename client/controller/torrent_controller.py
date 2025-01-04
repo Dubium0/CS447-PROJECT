@@ -1,3 +1,4 @@
+import p2p.p2p
 from ..model.torrent_model import TorrentModel
 from ..view.torrent_view import TorrentView
 from ..model.torrent_metainfo import TorrentMetainfo,TorrentViewInfo
@@ -9,6 +10,9 @@ from bittorrent_implementation.metainfo import create_torrent_metainfo
 import os
 from pathlib import Path
 import requests
+import threading
+
+from . import p2p  
 class TorrentController:
     def __init__(self):
         self.model = TorrentModel()
@@ -66,6 +70,12 @@ class TorrentController:
     def get_next_port(self) ->int:
         self.port +=1
         return self.port
+    
+    def create_download_thread(self,peer_ip, peer_port, torrentHash, total_pieces, file_size):
+        download_thread = threading.Thread(target=p2p.start_download, args=(peer_ip, peer_port, torrentHash, total_pieces, file_size,), daemon=True)
+        download_thread.start()
+        self.download_threads.append(download_thread)
+    
     def get_public_ip(self):
         try:
             # Use a service to get the public IP address

@@ -3,6 +3,7 @@ import tkinter as tk
 import requests
 import hashlib
 import random
+import math
 class TorrentPopup:
     def __init__(self, parent, item, controller):
         self.parent = parent
@@ -34,6 +35,8 @@ class TorrentPopup:
         # URL to fetch data from
         url = self.item.announce_url
         info_hash = hashlib.sha1(self.item.info.pieces).hexdigest()
+
+
         port = self.controller.get_next_port()
         ip = self.controller.get_public_ip()
         params = {
@@ -45,13 +48,11 @@ class TorrentPopup:
         }
         # Send the GET request
         response = requests.get(url, params=params)
-
-        print(response)
+        peer :str = response.json()['peers'][0]
+        ip,port = peer.split(':')
+#peer_ip, peer_port, torrentHash, total_pieces, file_size
+        total_piece = math.ceil(self.item.info.lenght / self.item.info.piece_length )
+        self.controller.create_download_thread(ip,port,info_hash,total_piece,self.item.info.lenght)
+        print(response.json())
         # Check if the request was successful
-        if response.status_code == 200:
-            # Parse the response as JSON
-            posts = response.json()
-            for post in posts[:5]:  # Print the first 5 posts
-                print(f"Post ID: {post['id']}, Title: {post['title']}")
-        else:
-            print(f"Failed to retrieve data. Status code: {response.status_code}")
+       
