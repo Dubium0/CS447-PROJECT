@@ -36,7 +36,8 @@ def calculate_sha1(byte_data):
     sha1.update(byte_data)  
     return sha1.hexdigest()  
 
-def start_download(peer_ip, peer_port, torrentHash, total_pieces):
+def start_download(peer_ip, peer_port, torrentHash, total_pieces, file_size):
+    create_file('received_file', file_size)
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((peer_ip, peer_port))
     client.send(torrentHash)
@@ -45,22 +46,31 @@ def start_download(peer_ip, peer_port, torrentHash, total_pieces):
         for i in range(total_pieces):
             piece = bytearray()
             download_piece(client, (i).to_bytes(4, 'big'))
-            while True:
-                request = client.recv(1024)
-                if(request == b'3'):
-                    # print(piece)
-                    break
-                else:
-                    print(request)
-                    piece.extend(request)
-                    print('added')
+            with open('received_file', 'r+b') as f:
+                offset = i * (file_size // total_pieces)
+                while True:
+                    request = client.recv(1024)
+                    if(request == b'3'):
+                        # print(piece)
+                        break
+                    else:
+                        print(request)
+                        piece.extend(request)
+                        print('added')
+                        f.seek(offset)
+                        f.write(request)
+                        offset += len(request)
+            print(f"Piece {i} written to file")           
             print()
             print()
             print()
             print(calculate_sha1(piece))
-        
 
-
+def create_file(file_name, file_size):
+    with open(file_name, 'wb') as f:
+        f.seek(file_size - 1)
+        f.write(b'\0')  # Write a single null byte at the end to set file size
+    print(f"Created empty file '{file_name}' of size {file_size} bytes.")
 
 def download_piece(client, piece):
     client.send(piece)
@@ -118,7 +128,7 @@ if __name__ == "__main__":
     threading.Thread(target=start_listening, args=(listen_port,), daemon=True).start()
 
     # Run this command when torrent is added
-    start_download(peer_ip, peer_port, message, 1)
+    start_download(peer_ip, peer_port, message, 1, 3140)
 
     while True:
         pass
