@@ -53,7 +53,17 @@ class TorrentList:
         self.controller.remove_torrent(selected_item.original)
 
     def on_double_click(self, event):
-        selected_item = self.tree.selection()[0]
-        self.controller.show_torrent_options(selected_item)
+          # Get the selected item(s)
+        selected_item = self.tree.selection()
+        torrent_metainfo = None
+        if selected_item:  # Check if an item is selected
+            # Retrieve the values of the selected item
+            item_values = self.tree.item(selected_item, 'values')
+            print("Selected Item:", item_values)
+            torrent_metainfo = self.controller.get_torrent_by_name(item_values[0])
+        else:
+            print("No item")
+        
+        self.controller.show_torrent_options(torrent_metainfo)
 
 

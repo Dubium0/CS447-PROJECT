@@ -8,11 +8,13 @@ from bittorrent_implementation.metainfo import create_torrent_metainfo
 
 import os
 from pathlib import Path
-
+import requests
 class TorrentController:
     def __init__(self):
         self.model = TorrentModel()
         self.view  = TorrentView(self)
+        self.port = 50000
+        self.download_threads = []
   
     def run(self):
         self.view.mainloop()
@@ -46,6 +48,8 @@ class TorrentController:
         self.model.remove_torrent(torrent_to_remove)
         self.update_torrent_view( self.model.get_torrent_view_list())
 
+    def get_torrent_by_name(self, torrent_name : str):
+        return self.model.get_torrent_by_name(torrent_name)
 
     def update_torrent_view(self, torrent_view_list : list[TorrentViewInfo]):
         self.view.update_torrent_list(torrent_view_list)
@@ -55,8 +59,23 @@ class TorrentController:
         return torrent_loader_saver.createTorrentMetainfoFromFile(file_path)
 
     def show_torrent_options(self, item):
-        popup = TorrentPopup(self.view, item)
+        popup = TorrentPopup(self.view, item,self)
         popup.show_popup()
 
 
- 
+    def get_next_port(self) ->int:
+        self.port +=1
+        return self.port
+    def get_public_ip(self):
+        try:
+            # Use a service to get the public IP address
+            response = requests.get('https://api.ipify.org?format=json')
+            
+            # Parse the JSON response
+            ip_data = response.json()
+            
+            # Return the public IP address
+            return ip_data['ip']
+        except Exception as e:
+            return f"Error: {e}"
+   
