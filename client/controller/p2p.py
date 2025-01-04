@@ -63,6 +63,43 @@ def start_download(peer_ip, peer_port, torrentHash, total_pieces, file_size,file
              
             print(calculate_sha1(piece))
 
+def download_piece_from_peer(peer_ip, peer_port, torrent_hash, piece_index, piece_size):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((peer_ip, peer_port))
+    client.send(torrent_hash)
+
+    response = client.recv(1024)
+    if response != b"1":
+        print("Peer rejected request.")
+        client.close()
+        return None
+
+    client.send(piece_index.to_bytes(4, 'big'))
+
+    piece = bytearray()
+    while True:
+        chunk = client.recv(1024)
+        if chunk == b'3':  # End-of-piece signal
+            break
+        piece.extend(chunk)
+
+    client.close()
+    print(f"Downloaded piece {piece_index}")
+    return piece
+
+def download_file(peer_ip, peer_port, torrent_hash, total_pieces, file_size):
+    create_file('received_file', file_size)
+    piece_size = file_size // total_pieces
+
+    for i in range(total_pieces):
+        piece = download_piece_from_peer(peer_ip, peer_port, torrent_hash, i, piece_size)
+        if piece:
+            with open('received_file', 'r+b') as f:
+                offset = i * piece_size
+                f.seek(offset)
+                f.write(piece)
+            print(f"Piece {i} written to file.")
+
 def create_file(file_name, file_size):
     with open(file_name, 'wb') as f:
         f.seek(file_size - 1)
@@ -96,7 +133,7 @@ def handle_client(client_socket):
     
     if request == b"hashhashashhash":
         client_socket.send(b"1")
-        file_path = 'sendfile.txt'
+        file_path = 'test.txt'
     
     while True:
         request = client_socket.recv(4096)
@@ -108,24 +145,24 @@ def handle_client(client_socket):
         print(f"Received piece request for index: {piece_index}")
         
         # Simulate reading and sending the piece
-        data = read_piece(file_path, piece_index, 262144, 3140, 1)
+        data = read_piece(file_path, piece_index, 262144, 714084, 3)
         send_data_in_chunks(client_socket, data)
 
 
 
 # Main Program to Run Both Simultaneously
-#if __name__ == "__main__":
-#    #Get these from tracker server
-#    listen_port = 6881
-#    peer_ip = "52.90.158.48"
-#    peer_port = 6881
-#    message = b"hashhashashhash"
-#
-#    # Start Listening in a Separate Thread
-#    threading.Thread(target=start_listening, args=(listen_port,), daemon=True).start()
-#
-#    # Run this command when torrent is added
-#    start_download(peer_ip, peer_port, message, 1, 3140)
-#
-#    while True:
-#        pass
+if __name__ == "__main__":
+   #Get these from tracker server
+   listen_port = 6881
+   peer_ip = "52.90.158.48"
+   peer_port = 6881
+   message = b"hashhashashhash"
+
+   # Start Listening in a Separate Thread
+   threading.Thread(target=start_listening, args=(listen_port,), daemon=True).start()
+
+   # Run this command when torrent is added
+   download_file(peer_ip, peer_port, message, 3, 714084)
+
+   while True:
+       pass
