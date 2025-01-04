@@ -16,7 +16,13 @@ class TorrentModel:
             if pair["Metainfo"] is torrent_to_remove:
                 self.torrent_list.remove(pair)
                 break
-    
+    def get_torrent_by_name(self, name):
+        result_list = []
+        for pair in self.torrent_list:
+            metainfo : TorrentMetainfo = pair["Metainfo"]
+            if metainfo.info.name == name:
+                return metainfo
+        return None
     def get_torrent_view_list(self):
         result_list = []
         for pair in self.torrent_list:

@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-from .callbacks.torrent_list_callbacks import TorrentListCallbacks
 from ..model.torrent_metainfo import TorrentMetainfo,TorrentViewInfo
 
 
@@ -30,9 +29,16 @@ class TorrentList:
 
         self.tree.pack(fill=tk.BOTH, expand=True)
 
+        self.tree.bind("<Double-1>", self.on_double_click)
+
+    def remove_children(self):
+        """Remove all children of a specific parent node."""
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
     def redraw_torrent_list(self, list_of_torrent : list[TorrentViewInfo]):
         
-        self.tree.children.clear()
+        self.remove_children()
         for item in list_of_torrent:
             self.tree.insert("", "end", values=(
                 item.name,
@@ -46,7 +52,18 @@ class TorrentList:
         selected_item : TorrentViewInfo = self.tree.selection()[0]
         self.controller.remove_torrent(selected_item.original)
 
-    def get_selected_torrent(self):
-        return self.callbacks.get_selected_torrent()
+    def on_double_click(self, event):
+          # Get the selected item(s)
+        selected_item = self.tree.selection()
+        torrent_metainfo = None
+        if selected_item:  # Check if an item is selected
+            # Retrieve the values of the selected item
+            item_values = self.tree.item(selected_item, 'values')
+            print("Selected Item:", item_values)
+            torrent_metainfo = self.controller.get_torrent_by_name(item_values[0])
+        else:
+            print("No item")
+        
+        self.controller.show_torrent_options(torrent_metainfo)
 
 

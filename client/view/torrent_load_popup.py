@@ -36,7 +36,6 @@ class TorrentLoadPopup:
 
     def on_cancel(self):
         print("Operation canceled.")
-        self.popup.quit()  # Stop the event loop
         self.popup.destroy()
         if self.on_cancel_callback is not None:
             self.on_cancel_callback()
