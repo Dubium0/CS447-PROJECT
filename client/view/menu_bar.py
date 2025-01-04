@@ -66,7 +66,7 @@ class MenuBar:
                                      creator= metainfo_file.created_by,
                                      file_size= metainfo_file.info.lenght)
 
-            popup.on_ok_callback = lambda : self.controller.add_torrent(metainfo_file, popup.selected_dir)
+            popup.on_ok_callback = lambda : self.controller.add_torrent(metainfo_file, popup.selected_dir,file_path)
             popup.on_cancel_callback = lambda : messagebox.showinfo("Canceled", "Torrent Load Operation Canceled")
             popup.show()
 

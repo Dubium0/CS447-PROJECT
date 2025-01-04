@@ -73,17 +73,17 @@ def create_download_metainfo(download_dir_path : str, torrent_path : str, downlo
 
     if not os.path.isdir(download_dir_path):
         print("Provide directory not file path!")
-        return Result.FAILURE
+        return None
 
     torrent_meta_info = decode_torrent_metainfo(torrent_path)
 
     if (torrent_meta_info == Result.FAILURE):
         print("Failed to decode torrent file1")
-        return
+        return None
     
     if not os.path.exists(download_item_path):
         print("Download Item path does not exists!")
-        return
+        return None
     
     torrent_name :str = torrent_meta_info['info']['name']
     torrent_name = ''.join(torrent_name.split('_'))
@@ -96,7 +96,7 @@ def create_download_metainfo(download_dir_path : str, torrent_path : str, downlo
         "file path" : download_item_path,
         "torrent path" : torrent_path,
         "piece length" : int(torrent_meta_info['info']['piece length']),
-        "downloaded pieces" : None,
+        "downloaded pieces" : [],
         "remaining pieces" : byteList,
     }
     print(download_metainfo["remaining pieces"])

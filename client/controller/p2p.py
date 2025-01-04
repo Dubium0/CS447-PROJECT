@@ -63,6 +63,32 @@ def start_download(peer_ip, peer_port, torrentHash, total_pieces, file_size,file
              
             print(calculate_sha1(piece))
 
+def download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, pieceIndex, piece_length,piece_hash):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((peer_ip, peer_port))
+    client.send(pieceIndex)
+    request = client.recv(1024)
+    if(request == b"1"):
+        piece = bytearray()
+        download_piece(client, (pieceIndex).to_bytes(4, 'big'))
+        with open(fileToWriteOn, 'r+b') as f:
+            offset = pieceIndex * piece_length
+            while True:
+                request = client.recv(1024)
+                if(request == b'3'):
+                    # print(piece)
+                    break
+                else:
+                    print(request)
+                    piece.extend(request)
+                    # check Piece hash here 
+                    f.seek(offset)
+                    f.write(request)
+                    offset += len(request)
+             
+            print(calculate_sha1(piece))
+
+
 def create_file(file_name, file_size):
     with open(file_name, 'wb') as f:
         f.seek(file_size - 1)
