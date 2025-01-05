@@ -126,7 +126,7 @@ class TorrentController:
         for filename in os.listdir(output_dir_path):
             if filename.endswith(".json"):
                 parts = filename.split("_")
-                if len(parts) > 1 and parts[1] == "downloadMetaInfo":
+                if len(parts) > 1 and parts[1] == "downloadMetaInfo" and parts[0] == metainfo.name:
                     print(f"File '{filename}' matches the criteria.")
                     download_info_path = os.path.join(output_dir_path, filename)
                     break  # Exit loop since we found the desired file
