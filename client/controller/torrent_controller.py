@@ -89,6 +89,8 @@ class TorrentController:
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
         self.add_torrent(torrent_metainfo,download_dest_path, dest_path, has_file=1)
+        threading.Thread(target=p2p.start_listening, args=(50003,  torrent_metainfo.info.piece_length, torrent_metainfo.info.lenght, len(torrent_metainfo.info.pieces)//20), daemon=True).start()
+
 
     def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str, has_file=0):
 
