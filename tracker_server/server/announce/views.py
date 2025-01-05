@@ -12,6 +12,7 @@ def announce():
     uploaded = request.args.get('uploaded')
     downloaded = request.args.get('downloaded')
     left = request.args.get('left')
+    has_file = request.args.get('has_file')
 
     if not all([info_hash, peer_id, ip, port]):
         return jsonify({'error': 'Missing required parameters'}), 400
@@ -23,7 +24,7 @@ def announce():
             return jsonify({'error': 'Internal server error'}), 500
 
     if not is_peer_tracked(info_hash, peer_id, ip, port):
-        res = track_peer(info_hash, peer_id, ip, port, uploaded, downloaded, left, event)
+        res = track_peer(info_hash, peer_id, ip, port, uploaded, downloaded, left, event, has_file)
 
         if not res:
             return jsonify({'error': 'Internal server error'}), 500
