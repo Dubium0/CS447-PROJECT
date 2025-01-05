@@ -88,9 +88,9 @@ class TorrentController:
         print(f"Torrent file created: {dest_path}")
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
-        self.add_torrent(torrent_metainfo,download_dest_path, dest_path, has_file=1)
+        self.add_torrent(torrent_metainfo,download_dest_path, dest_path, has_file=1,existing_file_path =src_path)
 
-    def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str, has_file=0):
+    def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str, has_file=0,existing_file_path =""):
 
         # download_info_path = None
         # # Iterate through files in the directory
@@ -133,12 +133,15 @@ class TorrentController:
 
         # If no matching file was found, create new files
         if not download_info_path:
-            download_file_path = self.create_file(output_dir_path, metainfo.info.name, metainfo.info.lenght)
+            if has_file:
+                download_file_path = existing_file_path
+            else:
+                download_file_path = self.create_file(output_dir_path, metainfo.info.name, metainfo.info.lenght)
             if not download_file_path:
                 print("Failed to create download file.")
                 return
 
-            download_info_path = create_download_metainfo(output_dir_path, torrent_src_path, download_file_path)
+            download_info_path = create_download_metainfo(output_dir_path, torrent_src_path, download_file_path,has_file)
             if not download_info_path:
                 print("Failed to create download info metadata.")
                 os.remove(download_file_path)  # Clean up the created file

@@ -1,6 +1,7 @@
 from .torrent_metainfo import TorrentMetainfo, TorrentViewInfo,TorrentDownloadInfo
 
 import json
+import math
 class TorrentModel:
 
     def __init__(self):
@@ -48,7 +49,7 @@ class TorrentModel:
             metainfo : TorrentMetainfo = pair["Metainfo"]
             downloadInfoPath  = pair["Download Info path"]
             download_info : TorrentDownloadInfo = self.get_torrent_download_info(downloadInfoPath)
-            total_numbe_of_pieces = (metainfo.info.lenght // metainfo.info.piece_length)
+            total_numbe_of_pieces = math.ceil(metainfo.info.lenght / metainfo.info.piece_length)
             view_info = TorrentViewInfo( 
                                     original= metainfo,
                                     name = metainfo.info.name,
@@ -66,6 +67,6 @@ class TorrentModel:
                 data["file path"],
                 data["torrent path"],
                 data["piece length"],
-                data["downloaded pieces"],
-                data["remaining pieces"])
+                [] if data["downloaded pieces"] == None else data["downloaded pieces"],
+                [] if data["remaining pieces"] == None else data["remaining pieces"])
             return download_info
