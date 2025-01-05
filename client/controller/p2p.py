@@ -20,7 +20,7 @@ def read_piece(file_path, piece_index, piece_length, file_length, num_of_pieces)
     return data
 
 #Sender Function
-def start_listening(port, pieceLength, fileLength, numOfPieces):
+def start_listening(port, pieceLength, fileLength, numOfPieces, source_path):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('0.0.0.0', port))
     server.listen(5)
@@ -29,7 +29,7 @@ def start_listening(port, pieceLength, fileLength, numOfPieces):
     while True:
         client_socket, addr = server.accept()
         print(f"Connected by {addr}")
-        handle_client(client_socket, pieceLength, fileLength, numOfPieces)
+        handle_client(client_socket, pieceLength, fileLength, numOfPieces, source_path)
 
 def calculate_sha1(byte_data):
     sha1 = hashlib.sha1()  
@@ -63,9 +63,9 @@ def calculate_sha1(byte_data):
              
 #             print(calculate_sha1(piece))
 
-def download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, pieceIndex, piece_length):
+def download_piece_by_piece(peer_ip, peer_port, fileToWriteOn, pieceIndex, piece_length, torrentHash):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((peer_ip, peer_port))
+    client.connect((peer_ip, int(peer_port)))
     
     response = client.recv(1024)
     if response != b"1":
@@ -127,10 +127,10 @@ def send_data_in_chunks(client_socket, data, chunk_size=1024):
     print(f"Sent {total_size} bytes in chunks of {chunk_size} bytes.")
 
 # Handle Incoming Client Connections
-def handle_client(client_socket, pieceLength, fileLength, numOfPieces):
+def handle_client(client_socket, pieceLength, fileLength, numOfPieces, source_path):
 
     client_socket.send(b"1")
-    file_path = 'test.txt'
+    file_path = source_path
     
     while True:
         request = client_socket.recv(4096)
