@@ -12,6 +12,9 @@ import requests
 import threading
 import json
 import hashlib
+import random
+import time
+import bencode
 
 from . import p2p  
 from . import torrent_download
@@ -84,6 +87,46 @@ class TorrentController:
             output_path=dest_path,
             announce_url="http://cs447-ozu-torrent-tracker-server.francecentral.cloudapp.azure.com:6881/announce"
         )
+
+        piece_length = pow(2,18) 
+
+        metainfo_raw = { 
+        'announce': "http://cs447-ozu-torrent-tracker-server.francecentral.cloudapp.azure.com:6881/announce", 
+        'creation date': int(time.time()), ## update to proper date time
+        'created by': 'NoName', 
+        'info': { 
+            'piece length': piece_length, 
+            'name': os.path.basename(src_path), 
+            'length': os.path.getsize(src_path), 
+            'pieces': b''
+            }
+        }
+        with open(src_path, 'rb') as byte_stream:
+            while True:
+                piece = byte_stream.read(piece_length)
+                if not piece:
+                    break
+                metainfo_raw['info']['pieces'] += hashlib.sha1(piece).digest()
+        # URL to fetch data from
+        url = metainfo_raw.get('announce')
+        info_hash = hashlib.sha1(metainfo_raw.get('info').get('pieces')).hexdigest()
+
+
+        port = 50003
+        ip = '44.202.116.201'
+        params = {
+        'info_hash': info_hash,
+        'peer_id': random.randint(1, 2**28-1),
+        'ip': ip,
+        'port': port,
+        'has_file': 1
+        }
+        # Send the GET request
+        response = requests.get(url, params=params)
+        peers :str = response.json()['peers']
+        peers_with_file = response.json()['peers_with_file']
+       
+        print(response.json())
 
         print(f"Torrent file created: {dest_path}")
 

@@ -35,6 +35,7 @@ class TorrentPopup:
         # URL to fetch data from
         url = self.item.announce_url
         info_hash = hashlib.sha1(self.item.info.pieces).hexdigest()
+        print(info_hash)
 
 
         port = self.controller.get_next_port()
@@ -51,7 +52,7 @@ class TorrentPopup:
         peers :str = response.json()['peers']
         peers_with_file = response.json()['peers_with_file']
        
-        self.controller.create_torrent_download_thread(peers,self.item.info.name)
+        self.controller.create_torrent_download_thread(peers_with_file,self.item.info.name)
         print(response.json())
         # Check if the request was successful
        
