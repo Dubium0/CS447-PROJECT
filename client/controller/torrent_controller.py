@@ -10,18 +10,69 @@ import os
 from pathlib import Path
 import requests
 import threading
+import json
 
 from . import p2p  
 from . import torrent_download
+
+from ..model.database import Database
+
 class TorrentController:
     def __init__(self):
         self.model = TorrentModel()
         self.view  = TorrentView(self)
         self.port = 50000
         self.download_threads = []
+        self.db = Database()
   
     def run(self):
         self.view.mainloop()
+
+    def load_torrents_from_database(self):
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT path FROM download_info_locations")
+        paths = cursor.fetchall()
+
+        if not paths:
+            print("No directories found in the database.")
+            return
+
+        for path_tuple in paths:
+            file_path = path_tuple[0]
+
+            # Validate that the path exists and is a file
+            if not os.path.isfile(file_path):
+                print(f"Invalid file path in database: {file_path}")
+                continue
+
+            try:
+                # Load the download info from the file
+                with open(file_path, "r") as file:
+                    download_info = json.load(file)
+
+                torrent_path = download_info.get("torrent path")
+                if not torrent_path or not os.path.exists(torrent_path):
+                    print(f"Torrent file not found: {torrent_path}")
+                    continue
+
+                # Load TorrentMetainfo
+                torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(torrent_path)
+                output_dir_path = os.path.dirname(file_path)
+
+                # Call add_torrent
+                self.add_torrent(
+                    metainfo=torrent_metainfo,
+                    output_dir_path=output_dir_path,
+                    torrent_src_path=torrent_path
+                )
+                print(f"Torrent added successfully: {torrent_path}")
+
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+
+        conn.close()
 
     def create_torrent(self, src_path, torrent_dest, download_dest_path = None):
         file_name = os.path.splitext(os.path.basename(src_path))[0]
@@ -97,9 +148,24 @@ class TorrentController:
             raise ValueError("download_info_path is None. Torrent addition failed.")
 
         print(f"Final download_info_path: {download_info_path}")
+
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        # Check if the download info path is already in the database
+        cursor.execute("SELECT 1 FROM download_info_locations WHERE path = ?", (download_info_path,))
+        result = cursor.fetchone()
+
+        if result is None:  # If not present, insert into the database
+            cursor.execute("INSERT INTO download_info_locations (path) VALUES (?)", (download_info_path,))
+            conn.commit()
+            print(f"Added {download_info_path} to the database.")
+
         
         self.model.add_torrent(metainfo, download_info_path)
         self.update_torrent_view( self.model.get_torrent_view_list())
+
+        conn.close()
 
 
     def create_file(self,createDirPath : str, fileName:str, fileSizeInBytes : int ) ->bool:
