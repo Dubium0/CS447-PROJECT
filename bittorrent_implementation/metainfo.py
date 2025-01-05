@@ -69,7 +69,7 @@ def decode_torrent_metainfo(file_path : str):
      
 
 #creates download metainfo file and returns its path
-def create_download_metainfo(download_dir_path : str, torrent_path : str, download_item_path : str) -> str:
+def create_download_metainfo(download_dir_path : str, torrent_path : str, download_item_path : str, hasFile) -> str:
 
     if not os.path.isdir(download_dir_path):
         print("Provide directory not file path!")
@@ -92,12 +92,14 @@ def create_download_metainfo(download_dir_path : str, torrent_path : str, downlo
     final_download_meta_info_file_path = os.path.join(download_dir_path,name)
 
     byteList =  list(enumerate(list(split_bytes(torrent_meta_info['info']['pieces'],20))))
+    
+
     download_metainfo  = {
         "file path" : download_item_path,
         "torrent path" : torrent_path,
         "piece length" : int(torrent_meta_info['info']['piece length']),
-        "downloaded pieces" : [],
-        "remaining pieces" : byteList,
+        "downloaded pieces" :  byteList  if hasFile else list(),
+        "remaining pieces" :  list() if hasFile else byteList,
     }
     print(download_metainfo["remaining pieces"])
     # Write JSON data to the file
