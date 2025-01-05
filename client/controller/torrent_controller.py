@@ -88,7 +88,7 @@ class TorrentController:
         print(f"Torrent file created: {dest_path}")
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
-        self.add_torrent(torrent_metainfo,download_dest_path, src_path, has_file=1)
+        self.add_torrent(torrent_metainfo,download_dest_path, dest_path, has_file=1)
 
     def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str, has_file=0):
 
@@ -126,7 +126,7 @@ class TorrentController:
         for filename in os.listdir(output_dir_path):
             if filename.endswith(".json"):
                 parts = filename.split("_")
-                if len(parts) > 1 and parts[1] == "downloadMetaInfo" and parts[0] == metainfo.name:
+                if len(parts) > 1 and parts[1] == "downloadMetaInfo" and parts[0] == metainfo.info.name:
                     print(f"File '{filename}' matches the criteria.")
                     download_info_path = os.path.join(output_dir_path, filename)
                     break  # Exit loop since we found the desired file
