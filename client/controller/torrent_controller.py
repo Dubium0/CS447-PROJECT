@@ -11,6 +11,7 @@ from pathlib import Path
 import requests
 import threading
 import json
+import hashlib
 
 from . import p2p  
 from . import torrent_download
@@ -87,9 +88,9 @@ class TorrentController:
         print(f"Torrent file created: {dest_path}")
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
-        self.add_torrent(torrent_metainfo,download_dest_path, src_path)
+        self.add_torrent(torrent_metainfo,download_dest_path, src_path, has_file=1)
 
-    def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str):
+    def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str, has_file=0):
 
         # download_info_path = None
         # # Iterate through files in the directory
@@ -149,6 +150,8 @@ class TorrentController:
 
         print(f"Final download_info_path: {download_info_path}")
 
+        info_hash = hashlib.sha1(metainfo.info.pieces).hexdigest()
+
         conn = self.db.connect()
         cursor = conn.cursor()
 
@@ -161,6 +164,17 @@ class TorrentController:
             conn.commit()
             print(f"Added {download_info_path} to the database.")
 
+        # Check if the info_hash is already in the has_file table
+        cursor.execute("SELECT 1 FROM has_file WHERE info_hash = ?", (info_hash,))
+        result = cursor.fetchone()
+        if result is None:  # If not present, insert into the database
+            cursor.execute(
+                "INSERT INTO has_file (info_hash, has) VALUES (?, ?)",
+                (info_hash, has_file)
+            )
+            print(f"Added info_hash {info_hash} with has = {has_file} to the has_file table.")
+
+        conn.commit()
         
         self.model.add_torrent(metainfo, download_info_path)
         self.update_torrent_view( self.model.get_torrent_view_list())
@@ -231,4 +245,25 @@ class TorrentController:
             return ip_data['ip']
         except Exception as e:
             return f"Error: {e}"
+
+    def check_has_file(self, info_hash):
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        try:
+            # Query the database for the info_hash
+            cursor.execute("SELECT has FROM has_file WHERE info_hash = ?", (info_hash,))
+            result = cursor.fetchone()
+
+            if result:
+                return result[0]  # Return the 'has' value (0 or 1)
+            else:
+                print(f"Info hash {info_hash} not found in has_file table.")
+                return 0
+        except Exception as e:
+            print(f"Error checking has_file: {e}")
+            return 0
+        finally:
+            conn.close()
+
    

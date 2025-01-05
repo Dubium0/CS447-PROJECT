@@ -96,7 +96,7 @@ def is_peer_tracked(info_hash, peer_id, ip, port):
 
     return result if result else False
 
-def track_peer(info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event=None):
+def track_peer(info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event=None, has_file=0):
     """
     Track a peer by inserting its information into the database.
 
@@ -118,10 +118,10 @@ def track_peer(info_hash, peer_id, ip, port, uploaded, downloaded, remaining, ev
 
         cursor.execute(
             """
-            INSERT INTO peers (info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event, last_announce)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))
+            INSERT INTO peers (info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event, has_file, last_announce)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))
             """,
-            (info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event)
+            (info_hash, peer_id, ip, port, uploaded, downloaded, remaining, event, has_file)
         )
 
         conn.commit()
@@ -191,7 +191,7 @@ def get_peers_for_torrent(info_hash, exclude_peer_id=None, exclude_ip=None, excl
 
         cursor.execute(
             """
-            SELECT peer_id, ip, port, uploaded, downloaded, remaining, event, last_announce
+            SELECT peer_id, ip, port, uploaded, downloaded, remaining, event, has_file, last_announce
             FROM peers
             WHERE info_hash = ?
             """,
@@ -214,7 +214,8 @@ def get_peers_for_torrent(info_hash, exclude_peer_id=None, exclude_ip=None, excl
                 'downloaded': row[4],
                 'remaining': row[5],
                 'event': row[6],
-                'last_announce': row[7]
+                'has_file': row[7],
+                'last_announce': row[8]
             })
 
     except Exception as e:

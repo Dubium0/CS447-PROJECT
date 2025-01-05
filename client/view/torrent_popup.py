@@ -44,11 +44,12 @@ class TorrentPopup:
         'peer_id': random.randint(1, 2**28-1),
         'ip': ip,
         'port': port,
-       
+        'has_file': self.controller.check_has_file(info_hash)
         }
         # Send the GET request
         response = requests.get(url, params=params)
         peers :str = response.json()['peers']
+        peers_with_file = response.json()['peers_with_file']
        
         self.controller.create_torrent_download_thread(peers,self.item.info.name)
         print(response.json())

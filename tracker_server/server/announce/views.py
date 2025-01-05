@@ -37,7 +37,8 @@ def announce():
     # Prepare the response in the BitTorrent format
     response = {
         'interval': 1800,  # Time in seconds before the client should announce again
-        'peers': [f"{peer['ip']}:{peer['port']}" for peer in peers]  # List of peers in "IP:port" format
+        'peers': [f"{peer['ip']}:{peer['port']}" for peer in peers],
+        'peers_with_file': [f"{peer['ip']}:{peer['port']}" for peer in peers if peer['has_file'] == 1]
     }
 
     return jsonify(response)
