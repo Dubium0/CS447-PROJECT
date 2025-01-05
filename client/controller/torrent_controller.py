@@ -36,37 +36,67 @@ class TorrentController:
         print(f"Torrent file created: {dest_path}")
 
         torrent_metainfo = torrent_loader_saver.createTorrentMetainfoFromFile(dest_path)
-        self.add_torrent(torrent_metainfo,download_dest_path)
+        self.add_torrent(torrent_metainfo,download_dest_path, src_path)
 
     def add_torrent(self,metainfo :TorrentMetainfo,output_dir_path : str, torrent_src_path :str):
 
+        # download_info_path = None
+        # # Iterate through files in the directory
+        # for filename in os.listdir(output_dir_path):
+        #     # Check if the file has a .json extension
+        #     if filename.endswith(".json"):
+        #         # Split the filename by '_'
+        #         parts = filename.split("_")
+        #
+        #         # Check if the second index is "downloadInfo"
+        #         if len(parts) > 1 and parts[1] == "downloadMetaInfo":
+        #             print(f"File '{filename}' matches the criteria.")
+        #
+        #             # Construct the full file path
+        #             download_info_path = os.path.join(output_dir_path, filename)
+        #
+        #         else:
+        #             print(f"File '{filename}' does not match the criteria.")
+        #             download_file_path =  self.create_file(output_dir_path,metainfo.info.name, metainfo.info.lenght)
+        #             if not download_file_path:
+        #                 print("Failed to add torrent")
+        #                 return
+        #             download_info_path =  create_download_metainfo(output_dir_path,torrent_src_path,download_file_path)
+        #             #save downlaod info
+        #             if( not download_info_path ):
+        #                 print("Failed to add download info")
+        #                 os.remove(download_file_path)
+        #                 return
+
         download_info_path = None
+
         # Iterate through files in the directory
         for filename in os.listdir(output_dir_path):
-            # Check if the file has a .json extension
             if filename.endswith(".json"):
-                # Split the filename by '_'
                 parts = filename.split("_")
-                
-                # Check if the second index is "downloadInfo"
                 if len(parts) > 1 and parts[1] == "downloadMetaInfo":
                     print(f"File '{filename}' matches the criteria.")
-                    
-                    # Construct the full file path
                     download_info_path = os.path.join(output_dir_path, filename)
-                    
-                else:
-                    print(f"File '{filename}' does not match the criteria.")
-                    download_file_path =  self.create_file(output_dir_path,metainfo.info.name, metainfo.info.lenght)
-                    if not download_file_path:
-                        print("Failed to add torrent")
-                        return
-                    download_info_path =  create_download_metainfo(output_dir_path,torrent_src_path,download_file_path)
-                    #save downlaod info
-                    if( not download_info_path ):
-                        print("Failed to add download info")
-                        os.remove(download_file_path)
-                        return 
+                    break  # Exit loop since we found the desired file
+
+        # If no matching file was found, create new files
+        if not download_info_path:
+            download_file_path = self.create_file(output_dir_path, metainfo.info.name, metainfo.info.lenght)
+            if not download_file_path:
+                print("Failed to create download file.")
+                return
+
+            download_info_path = create_download_metainfo(output_dir_path, torrent_src_path, download_file_path)
+            if not download_info_path:
+                print("Failed to create download info metadata.")
+                os.remove(download_file_path)  # Clean up the created file
+                return
+
+        # Validate the final download_info_path
+        if not download_info_path:
+            raise ValueError("download_info_path is None. Torrent addition failed.")
+
+        print(f"Final download_info_path: {download_info_path}")
         
         self.model.add_torrent(metainfo, download_info_path)
         self.update_torrent_view( self.model.get_torrent_view_list())
